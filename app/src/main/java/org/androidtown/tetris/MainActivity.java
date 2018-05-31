@@ -1,5 +1,6 @@
 package org.androidtown.tetris;
 
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -20,12 +21,15 @@ public class MainActivity extends AppCompatActivity {
   private int mapFrY = 0;
   private int previewFrX = 0;
   private int previewFrY = 0;
+  private boolean isDone = false;
 
   FrameLayout mapFr;
   FrameLayout previewFr;
   Stage stage;
   Thread stageThread;
   Preview preview;
+
+  ViewTreeObserver vto;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
     mapFr = findViewById(R.id.map);
     previewFr = findViewById(R.id.preview);
-    mapFr.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+    vto = mapFr.getViewTreeObserver();
+    vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
       @Override
       public void onGlobalLayout() {
         mapFrX = mapFr.getWidth();
@@ -42,9 +48,18 @@ public class MainActivity extends AppCompatActivity {
         previewFrX = previewFr.getWidth();
         previewFrY = previewFr.getHeight();
 
+        // 등록된 리스너 제거(제거하지 않으면 반복 호출됨)
+        if (Build.VERSION.SDK_INT > 16) {
+          mapFr.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        } else {
+          mapFr.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        }
+
+        // 프로그램 동작
         run();
       }
     });
+
   }
 
   public void run() {
@@ -81,18 +96,30 @@ public class MainActivity extends AppCompatActivity {
   }
 
   public void rotate(View v) {
-
+    if(stage != null) {
+      stage.moveRotate();
+      Log.d(Const.TAG, "stage()->moveRotate 호출");
+    }
   }
 
   public void left(View v) {
-
+    if(stage != null) {
+      stage.moveLeft();
+      Log.d(Const.TAG, "stage()->moveLeft 호출");
+    }
   }
 
   public void right(View v) {
-
+    if(stage != null) {
+      stage.moveRight();
+      Log.d(Const.TAG, "stage()->moveRight 호출");
+    }
   }
 
   public void down(View v) {
-
+    if(stage != null) {
+      stage.moveDown();
+      Log.d(Const.TAG, "stage()->moveDown 호출");
+    }
   }
 }

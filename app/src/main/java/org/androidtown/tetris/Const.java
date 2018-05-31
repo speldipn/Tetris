@@ -10,7 +10,7 @@ public class Const {
   public static final int GRIDWIDTH = 1;
 
   static Paint paint = new Paint();
-  public enum PType {BLOCK, BORDER, EMPTY, GRID}
+  public enum PType {BLOCK, BORDER, FIXED, EMPTY, GRID}
 
   static Paint getPaint(PType type) {
     switch (type) {
@@ -31,18 +31,14 @@ public class Const {
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLUE);
         break;
+      case FIXED:
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.YELLOW);
+        break;
       default:
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
     }
     return paint;
-  }
-
-  public static void sleep(long msec) {
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
   }
 }
