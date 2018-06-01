@@ -2,11 +2,7 @@ package org.androidtown.tetris;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.view.View;
-import android.widget.FrameLayout;
-
-import java.security.CodeSigner;
 
 class Stage extends View implements Runnable {
 
@@ -18,12 +14,15 @@ class Stage extends View implements Runnable {
   private int curX;
   private int curY;
 
-  private final int START_X_IDX = 1;
-  private final int END_X_IDX = 10;
-  private final int START_Y_IDX = 0;
-  private final int END_Y_IDX = 22;
-
   private boolean isRun = true;
+
+  public class BlockPos {
+    int x;
+    int y;
+  }
+
+  private BlockPos blockPos = new BlockPos();
+  private BlockPos prevBlockPos = new BlockPos();
 
   int map[][] = {
     {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
@@ -63,11 +62,27 @@ class Stage extends View implements Runnable {
 
   @Override
   protected void onDraw(Canvas canvas) {
-    super.onDraw(canvas);
-    drawMap(canvas);
+    updateBlock(canvas);
+    drawStage(canvas);
   }
 
-  public void drawMap(Canvas canvas) {
+  private void updateBlock(Canvas canvas) {
+
+    for (int i = prevBlockPos.y; i < (block.length + prevBlockPos.y); ++i) {
+      for (int j = prevBlockPos.x; j < (block[0].length + prevBlockPos.x); ++j) {
+        map[i][j] = 0;
+      }
+    }
+
+    for (int i = blockPos.y; i < (block.length + blockPos.y); ++i) {
+      for (int j = blockPos.x; j < (block[0].length + blockPos.x); ++j) {
+        map[i][j] = 0;
+        map[i][j] = block[i - blockPos.y][j - blockPos.x];
+      }
+    }
+  }
+
+  public void drawStage(Canvas canvas) {
     int row = map.length;
     int col = map[0].length;
     for (int i = 3; i < row; ++i) {
@@ -86,82 +101,75 @@ class Stage extends View implements Runnable {
         }
       }
     }
-  }
 
-  public boolean isReady() {
-    boolean moving = false;
-    for (int i = 0; i < map.length; ++i) {
-      for (int j = 0; j < map[0].length; ++j) {
-        if (map[i][j] == B) {
-          moving = true;
-        }
-      }
-    }
-    return !moving;
-  }
-
-  public boolean checkPos(int x, int y) {
-    if ((x >= 0) && (x < map.length - 1)) {
-      if ((y >= 0) && (y < map[0].length - 1)) {
-        // 검사하는 자리가 Fixed나 Border가 아니면
-        if (map[x][y] != F && map[x][y] != X) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   public boolean moving() {
-    moveDown();
-    return !isReady();
+    return true;
+  }
+
+  private boolean isPossibleMove(int x, int y, boolean isRotate) {
+    int[][] target = new int[block.length][block[0].length];
+    for (int i = 0; i < block.length; ++i) {
+      for (int j = 0; j < block[0].length; ++j) {
+        int tempY = i + y;
+        int tempX = j + x;
+        int val = block[i + y][j + x];
+
+      }
+    }
+
+    //1. 이동하려는 방향으로 맵의 데이터를 복사
+    for (int i = 0; i < block.length; ++i) {
+      for (int j = 0; j < block[0].length; ++j) {
+        target[i][j] = map[blockPos.y + i + y][blockPos.x + j];
+      }
+    }
+    // 현재 블록과 복사 데이터를 비교
+    for (int i = 0; i < block.length; ++i) {
+      for (int j = 0; j < block[0].length; ++j) {
+        if (block[i][j] + target[i][j] == block[i][j]) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   public void moveRotate() {
-    int[][] rotateBlock = Generator.getRotateBlock(block);
-    int x = 0;
-    int y = 0;
-    for(int i = curY; i < (curY + rotateBlock.length); ++i, ++x) {
-      for(int j = curX; j < (curX + rotateBlock[0].length); ++j, ++y) {
-        map[i][j] = rotateBlock[x][y];
-      }
-      y = 0;
+    if (isPossibleMove(0, 0, true)) {
+      block = Generator.getRotateBlock(block);
+      invalidate();
     }
-    block = rotateBlock;
   }
 
   public void moveDown() {
-    for (int i = END_Y_IDX; i > START_Y_IDX; --i) {
-      for (int j = START_X_IDX; j <= END_X_IDX; ++j) {
-        map[i][j] = map[i - 1][j];
-        map[i - 1][j] = 0;
-      }
+    if (isPossibleMove(0, 1, false)) {
+      prevBlockPos.y = blockPos.y;
+      blockPos.y += 1;
+      invalidate();
     }
-    curY += 1;
   }
 
   public void moveLeft() {
-    for (int i = START_Y_IDX; i <= END_Y_IDX; ++i) {
-      for (int j = START_X_IDX + 1; j <= END_X_IDX; ++j) {
-        map[i][j - 1] = map[i][j];
-        map[i][j] = 0;
-      }
+    if (isPossibleMove(-1, 0, false)) {
+      prevBlockPos.x = blockPos.x;
+      blockPos.x -= 1;
+      invalidate();
     }
-    curX -= 1;
   }
 
   public void moveRight() {
-    for (int i = START_Y_IDX; i <= END_Y_IDX; ++i) {
-      for (int j = END_X_IDX; j > START_X_IDX; --j) {
-        map[i][j] = map[i][j - 1];
-        map[i][j - 1] = 0;
-      }
+    if (isPossibleMove(1, 0, false)) {
+      prevBlockPos.x = blockPos.x;
+      blockPos.x += 1;
+      invalidate();
     }
-    curX += 1;
   }
 
   private int[][] preBlock = Generator.getBlock();
   private int[][] block = preBlock;
+
   @Override
   public void run() {
     boolean isMoving = false;
@@ -180,7 +188,6 @@ class Stage extends View implements Runnable {
       } else {
         isMoving = false;
       }
-      postInvalidate();
       try {
         Thread.sleep(200);
       } catch (InterruptedException e) {
@@ -188,6 +195,12 @@ class Stage extends View implements Runnable {
       }
     }
   }
+
+
+  private final int START_X_IDX = 1;
+  private final int END_X_IDX = 10;
+  private final int START_Y_IDX = 0;
+  private final int END_Y_IDX = 22;
 
   private void setBlock(int[][] block) {
     int start = ((START_X_IDX + END_X_IDX) / 2) - (block[0].length / 2) + START_X_IDX;
@@ -198,8 +211,11 @@ class Stage extends View implements Runnable {
       }
       y = 0;
     }
-    curX = start;
-    curY = 0;
+    // 생성된 블럭의 위치를 초기화.
+    blockPos.x = start;
+    blockPos.y = 0;
+    prevBlockPos.x = start;
+    prevBlockPos.y = 0;
   }
 
   public void doStop() {
