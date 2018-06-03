@@ -6,7 +6,6 @@ import android.view.View;
 
 public class Preview extends View {
 
-  private final int B = 1;
   private final int X = 99;
   private int blockWidth;
   private int blockHeight;
@@ -14,6 +13,7 @@ public class Preview extends View {
   private boolean isRun = true;
 
   int preview[][] = {
+    {X, X, X, X, X, X},
     {X, 0, 0, 0, 0, X},
     {X, 0, 0, 0, 0, X},
     {X, 0, 0, 0, 0, X},
@@ -26,7 +26,7 @@ public class Preview extends View {
     int col = block[0].length;
     for (int i = 0; i < row; ++i) {
       for (int j = 0; j < col; ++j) {
-        preview[i][j + 1] = block[i][j];
+        preview[i + 1][j + 1] = block[i][j];
       }
     }
   }
@@ -54,8 +54,20 @@ public class Preview extends View {
         canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.GRID));
         if (preview[i][j] == X) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BORDER));
-        } else if (preview[i][j] == B) {
-          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLOCK));
+        } else if (preview[i][j] == 1) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_O));
+        } else if (preview[i][j] == 2) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_I));
+        } else if (preview[i][j] == 3) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_S));
+        } else if (preview[i][j] == 4) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_Z));
+        } else if (preview[i][j] == 5) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_L));
+        } else if (preview[i][j] == 6) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_J));
+        } else if (preview[i][j] == 7) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_T));
         } else {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.EMPTY));
         }

@@ -1,13 +1,11 @@
 package org.androidtown.tetris;
 
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.FrameLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -15,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
   private final int STAGE_X_CNT = 12;
   private final int STAGE_Y_CNT = 21;
   private final int PREVIEW_X_CNT = 6;
-  private final int PREVIEW_Y_CNT = 5;
+  private final int PREVIEW_Y_CNT = 6;
 
   private int mapFrX = 0;
   private int mapFrY = 0;
@@ -56,14 +54,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 프로그램 동작
-        run();
+        stageRun();
       }
     });
-
   }
 
-  public void run() {
+  public void stageRun() {
     runStage();
+    new Thread() {
+      @Override
+      public void run() {
+        while(true) {
+          if(stage != null) {
+            stage.moveDown();
+          }
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }.start();
   }
 
   public void runStage() {
@@ -122,4 +134,6 @@ public class MainActivity extends AppCompatActivity {
       Log.d(Const.TAG, "stage()->moveDown 호출");
     }
   }
+
+
 }

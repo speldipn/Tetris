@@ -4,11 +4,25 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.view.View;
 
-class Stage extends View implements Runnable {
+import java.util.LinkedList;
+import java.util.Queue;
 
-  private final int B = 1;
-  private final int F = 2;
-  private final int X = 99;
+class Stage extends View implements Runnable {
+  private final int MAP_WIDTH = 12;
+  private final int MAP_HEIGHT = 24;
+
+  private final int START_X_IDX = 1;
+  private final int END_X_IDX = 10;
+  private final int START_Y_IDX = 0;
+  private final int END_Y_IDX = 22;
+
+  private final int EM = 0; // Empty
+  private final int BK = 1; // Block
+  private final int FX = 2; // Fixed
+  private final int DN = 50; // Done
+  private final int SX = 80; // Side Border
+  private final int BX = 99; // Bottom Border
+
   private int blockWidth;
   private int blockHeight;
   private int curX;
@@ -21,34 +35,40 @@ class Stage extends View implements Runnable {
     int y;
   }
 
+  private int[][] preBlock;
+  private int[][] block;
+
   private BlockPos blockPos = new BlockPos();
-  private BlockPos prevBlockPos = new BlockPos();
+
+  private enum COMMAND {Rotation, Left, Right, Down}
+
+  Queue<COMMAND> msgQ = new LinkedList<>();
 
   int map[][] = {
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X},
-    {X, X, X, X, X, X, X, X, X, X, X, X}
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
   };
 
   private Preview preview = null;
@@ -66,18 +86,40 @@ class Stage extends View implements Runnable {
     drawStage(canvas);
   }
 
-  private void updateBlock(Canvas canvas) {
-
-    for (int i = prevBlockPos.y; i < (block.length + prevBlockPos.y); ++i) {
-      for (int j = prevBlockPos.x; j < (block[0].length + prevBlockPos.x); ++j) {
-        map[i][j] = 0;
-      }
+  private void updatePreview() {
+    if (preview != null) {
+      preBlock = Generator.getBlock();
+      preview.setBlock(preBlock);
+      preview.postInvalidate();
     }
+  }
 
+  private boolean checkPos(int x, int y) {
+    if (x < START_X_IDX || x > END_X_IDX) {
+      return false;
+    }
+    if (y < START_Y_IDX || y > END_Y_IDX) {
+      return false;
+    }
+    return true;
+  }
+
+  private boolean notDone(int x, int y) {
+    if (((map[x][y] / DN) == 0) && ((map[x][y] % DN) == map[x][y])) {
+      return true;
+    }
+    return false;
+  }
+
+  private void updateBlock(Canvas canvas) {
+    // 현재 블록을 그려준다.
     for (int i = blockPos.y; i < (block.length + blockPos.y); ++i) {
       for (int j = blockPos.x; j < (block[0].length + blockPos.x); ++j) {
-        map[i][j] = 0;
-        map[i][j] = block[i - blockPos.y][j - blockPos.x];
+        if (checkPos(j, i)) {
+          if (notDone(i, j)) {
+            map[i][j] = block[i - blockPos.y][j - blockPos.x];
+          }
+        }
       }
     }
   }
@@ -92,115 +134,189 @@ class Stage extends View implements Runnable {
         int top = ((i - 3) * blockHeight) + Const.GRIDWIDTH;
         int bottom = (top + blockHeight) - Const.GRIDWIDTH;
         canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.GRID));
-        if (map[i][j] == X) {
+        if (map[i][j] == SX | map[i][j] == BX) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BORDER));
-        } else if (map[i][j] == B) {
-          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLOCK));
+        } else if (map[i][j] % DN == 1) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_O));
+        } else if (map[i][j] % DN== 2) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_I));
+        } else if (map[i][j] % DN== 3) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_S));
+        } else if (map[i][j] % DN== 4) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_Z));
+        } else if (map[i][j] % DN== 5) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_L));
+        } else if (map[i][j] % DN== 6) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_J));
+        } else if (map[i][j] % DN== 7) {
+          canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_T));
         } else {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.EMPTY));
         }
       }
     }
-
-  }
-
-  public boolean moving() {
-    return true;
   }
 
   private boolean isPossibleMove(int x, int y, boolean isRotate) {
+    // 현재 위치의 맵에서 블록을 제거
+    for (int i = 0; i < block.length; ++i) {
+      for (int j = 0; j < block[0].length; ++j) {
+        if (block[i][j] > 0) {
+          map[blockPos.y + i][blockPos.x + j] = 0;
+        }
+      }
+    }
+    // 이동하려는 방향으로 이동한 후에 맵을 가져오고
     int[][] target = new int[block.length][block[0].length];
     for (int i = 0; i < block.length; ++i) {
       for (int j = 0; j < block[0].length; ++j) {
-        int tempY = i + y;
-        int tempX = j + x;
-        int val = block[i + y][j + x];
-
-      }
-    }
-
-    //1. 이동하려는 방향으로 맵의 데이터를 복사
-    for (int i = 0; i < block.length; ++i) {
-      for (int j = 0; j < block[0].length; ++j) {
-        target[i][j] = map[blockPos.y + i + y][blockPos.x + j];
-      }
-    }
-    // 현재 블록과 복사 데이터를 비교
-    for (int i = 0; i < block.length; ++i) {
-      for (int j = 0; j < block[0].length; ++j) {
-        if (block[i][j] + target[i][j] == block[i][j]) {
-          return false;
+        int _x = blockPos.x + j + x;
+        int _y = blockPos.y + i + y;
+        if ((_x >= 0 && _x < MAP_WIDTH) && (_y >= 0 && _y < MAP_HEIGHT)) {
+          target[i][j] = map[_y][_x];
+        } else {
+          target[i][j] = SX;
         }
       }
+    }
+    int[][] temp = null;
+    if (isRotate) {
+      temp = Generator.getRotateBlock(block);
+    } else {
+      temp = block;
+    }
+    // 이동하려는 블럭이 이동할 수 있는지 확인
+    int dirX = 0;
+    for (int i = 0; i < temp.length; ++i) {
+      for (int j = 0; j < temp[0].length; ++j) {
+        if (temp[i][j] > 0) {
+          int val = temp[i][j] + target[i][j];
+          if (val != temp[i][j]) {
+            if (isRotate) {
+              if (val > BX) {
+                return false;
+              }
+              dirX += (j <= 1) ? 1 : (-1);
+            } else {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    if (isRotate) {
+      blockPos.x += dirX;
     }
     return true;
   }
 
   public void moveRotate() {
+    msgQ.add(COMMAND.Rotation);
+  }
+
+  private void __moveRotate() {
     if (isPossibleMove(0, 0, true)) {
       block = Generator.getRotateBlock(block);
-      invalidate();
+      postInvalidate();
     }
   }
 
   public void moveDown() {
+    msgQ.add(COMMAND.Down);
+  }
+
+  private void __moveDown() {
     if (isPossibleMove(0, 1, false)) {
-      prevBlockPos.y = blockPos.y;
       blockPos.y += 1;
-      invalidate();
+    } else {
+      blockDone();
+      removeLine();
+      block = preBlock;
+      setBlock(block);
+      updatePreview();
+    }
+    postInvalidate();
+  }
+
+  private void blockDone() {
+    for (int i = 0; i < block.length; ++i) {
+      for (int j = 0; j < block[0].length; ++j) {
+        if (block[i][j] > 0) {
+          map[blockPos.y + i][blockPos.x + j] = DN + block[i][j];
+        }
+      }
     }
   }
 
   public void moveLeft() {
+    msgQ.add(COMMAND.Left);
+  }
+
+  private void __moveLeft() {
     if (isPossibleMove(-1, 0, false)) {
-      prevBlockPos.x = blockPos.x;
       blockPos.x -= 1;
-      invalidate();
+      postInvalidate();
     }
   }
 
   public void moveRight() {
-    if (isPossibleMove(1, 0, false)) {
-      prevBlockPos.x = blockPos.x;
-      blockPos.x += 1;
-      invalidate();
-    }
+    msgQ.add(COMMAND.Right);
   }
 
-  private int[][] preBlock = Generator.getBlock();
-  private int[][] block = preBlock;
+  private void __moveRight() {
+    if (isPossibleMove(1, 0, false)) {
+      blockPos.x += 1;
+      postInvalidate();
+    }
+  }
 
   @Override
   public void run() {
-    boolean isMoving = false;
     while (isRun) {
-      if (preview != null) {
-        preview.setBlock(preBlock);
-        preview.postInvalidate();
-      }
-      if (!isMoving) {
-        block = preBlock;
-        setBlock(block);
-        preBlock = Generator.getBlock();
-      }
-      if (moving()) {
-        isMoving = true;
+      if (msgQ.peek() != null) {
+        COMMAND cmd = msgQ.poll();
+        switch (cmd) {
+          case Rotation:
+            __moveRotate();
+            break;
+          case Left:
+            __moveLeft();
+            break;
+          case Right:
+            __moveRight();
+            break;
+          case Down:
+            __moveDown();
+            break;
+        }
       } else {
-        isMoving = false;
-      }
-      try {
-        Thread.sleep(200);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+        try {
+          Thread.sleep(50);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
 
-
-  private final int START_X_IDX = 1;
-  private final int END_X_IDX = 10;
-  private final int START_Y_IDX = 0;
-  private final int END_Y_IDX = 22;
+  private void removeLine() {
+    int doneCnt = 0;
+    for (int i = END_Y_IDX; i >= START_Y_IDX; --i) {
+      doneCnt = 0;
+      for (int j = START_X_IDX; j <= END_X_IDX; ++j) {
+        if (((map[i][j] / DN) == 1) && ((map[i][j] % DN) < 10)) {
+          doneCnt += 1;
+        }
+      }
+      if (doneCnt >= (END_X_IDX - START_X_IDX + 1)) {
+        // 정리해야될 라인이 있다면
+        for (int j = i - 1; j >= START_Y_IDX; --j) {
+          System.arraycopy(map[j], 0, map[j + 1], 0, map[j].length);
+        }
+        i += 1;
+      }
+    }
+  }
 
   private void setBlock(int[][] block) {
     int start = ((START_X_IDX + END_X_IDX) / 2) - (block[0].length / 2) + START_X_IDX;
@@ -214,8 +330,6 @@ class Stage extends View implements Runnable {
     // 생성된 블럭의 위치를 초기화.
     blockPos.x = start;
     blockPos.y = 0;
-    prevBlockPos.x = start;
-    prevBlockPos.y = 0;
   }
 
   public void doStop() {
@@ -224,5 +338,9 @@ class Stage extends View implements Runnable {
 
   public void addPreview(Preview preview) {
     this.preview = preview;
+    updatePreview();
+    block = preBlock;
+    setBlock(block);
+    updatePreview();
   }
 }
