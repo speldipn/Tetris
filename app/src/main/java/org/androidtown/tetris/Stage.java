@@ -258,7 +258,7 @@ class Stage extends View implements Runnable {
         handler.sendEmptyMessage(MainActivity.END);
       }
       this.score += 10;
-      if (this.score >= 50) {
+      if (this.score >= 500) {
         handler.sendEmptyMessage(MainActivity.NEXT);
       }
       blockDone();
