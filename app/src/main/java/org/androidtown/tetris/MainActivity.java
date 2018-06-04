@@ -107,33 +107,22 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  public void rotate(View v) {
-    if(stage != null) {
-      stage.moveRotate();
-      Log.d(Const.TAG, "stage()->moveRotate 호출");
+  public void command(View v) {
+    if (stage != null) {
+      switch (v.getId()) {
+        case R.id.btnRotate:
+          stage.moveRotate();
+          break;
+        case R.id.btnLeft:
+          stage.moveLeft();
+          break;
+        case R.id.btnRight:
+          stage.moveRight();
+          break;
+        case R.id.btnDown:
+          stage.moveDown();
+          break;
+      }
     }
   }
-
-  public void left(View v) {
-    if(stage != null) {
-      stage.moveLeft();
-      Log.d(Const.TAG, "stage()->moveLeft 호출");
-    }
-  }
-
-  public void right(View v) {
-    if(stage != null) {
-      stage.moveRight();
-      Log.d(Const.TAG, "stage()->moveRight 호출");
-    }
-  }
-
-  public void down(View v) {
-    if(stage != null) {
-      stage.moveDown();
-      Log.d(Const.TAG, "stage()->moveDown 호출");
-    }
-  }
-
-
 }
