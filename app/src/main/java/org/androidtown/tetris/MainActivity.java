@@ -6,14 +6,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-  private static final int SCORE = 1;
   private final int STAGE_X_CNT = 12;
   private final int STAGE_Y_CNT = 21;
   private final int PREVIEW_X_CNT = 6;
@@ -34,6 +35,10 @@ public class MainActivity extends AppCompatActivity {
   Preview preview;
 
   ViewTreeObserver vto;
+
+  public static final int SCORE = 1;
+  public static final int END = 2;
+
   final Handler handler = new Handler() {
     @Override
     public void handleMessage(Message msg) {
@@ -41,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
         if(stage != null) {
           scoreView.setText(stage.getScore() + "점");
         }
+      } else if(msg.what == END) {
+        Toast.makeText(MainActivity.this, "게임이 끝났습니다", Toast.LENGTH_LONG).show();
+        finish();
       }
     }
   };
@@ -99,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
   public void runStage() {
     // 스테이지 생성
-    stage = new Stage(mapFr.getContext(), mapFrX / STAGE_X_CNT, mapFrY / STAGE_Y_CNT);
+    stage = new Stage(mapFr.getContext(), mapFrX / STAGE_X_CNT, mapFrY / STAGE_Y_CNT, this.handler);
     mapFr.addView(stage);
 
     // 프리뷰 생성

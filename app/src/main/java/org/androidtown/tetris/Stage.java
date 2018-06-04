@@ -2,6 +2,7 @@ package org.androidtown.tetris;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Handler;
 import android.view.View;
 
 import java.util.LinkedList;
@@ -64,26 +65,28 @@ class Stage extends View implements Runnable {
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-    {SX, 54, 54, 54, 54, 54, 54, 54, 54, 54, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+//    {SX, 54, 54, 54, 54, 54, 54, 54, 54, 54, EM, SX},
     {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
   };
 
   private Preview preview = null;
 
+  Handler handler = null;
 
-  public Stage(Context ctx, int blockWidth, int blockHeight) {
+  public Stage(Context ctx, int blockWidth, int blockHeight, Handler handler) {
     super(ctx);
     this.blockWidth = blockWidth;
     this.blockHeight = blockHeight;
+    this.handler = handler;
   }
 
   @Override
@@ -133,11 +136,12 @@ class Stage extends View implements Runnable {
   public void drawStage(Canvas canvas) {
     int row = map.length;
     int col = map[0].length;
-    for (int i = 3; i < row; ++i) {
+    int start = 3;
+    for (int i = start; i < row; ++i) {
       for (int j = 0; j < col; ++j) {
         int left = (j * blockWidth) + Const.GRIDWIDTH;
         int right = (left + blockWidth) - Const.GRIDWIDTH;
-        int top = ((i - 3) * blockHeight) + Const.GRIDWIDTH;
+        int top = ((i - start) * blockHeight) + Const.GRIDWIDTH;
         int bottom = (top + blockHeight) - Const.GRIDWIDTH;
         canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.GRID));
         if (map[i][j] == SX | map[i][j] == BX) {
@@ -203,7 +207,6 @@ class Stage extends View implements Runnable {
                 return false;
               } else if (val > SX) {// 이미 쌓여진 불록에 닿거나
                 dirX += (j <= 1) ? 1 : (-1);
-
                 int doneBlkCnt = 0;
                 for (int m = 0; m < temp.length; ++m) {
                   for (int n = 0; n < temp[0].length; ++n) {
@@ -253,6 +256,9 @@ class Stage extends View implements Runnable {
     if (isPossibleMove(0, 1, false)) {
       blockPos.y += 1;
     } else {
+      if(blockPos.y < 4) {
+        handler.sendEmptyMessage(MainActivity.END);
+      }
       score += 10;
       blockDone();
       removeLine();
