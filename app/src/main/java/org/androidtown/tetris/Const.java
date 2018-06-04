@@ -20,17 +20,16 @@ public class Const {
     switch (type) {
       case EMPTY:
         paint.setStyle(Paint.Style.FILL);
-//        paint.setColor(Color.GRAY);
         paint.setColor(Color.rgb(46, 46, 46));
         break;
       case BORDER:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.rgb(219, 112, 147)); // pale violet
+        paint.setColor(Color.BLACK);
         break;
       case GRID:
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(GRIDWIDTH);
-        paint.setColor(Color.rgb(	255, 255, 255));
+        paint.setColor(Color.RED);
         break;
       case BLOCK:
         paint.setStyle(Paint.Style.FILL);
@@ -46,23 +45,23 @@ public class Const {
         break;
       case BLK_O:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.RED);
+        paint.setColor(Color.RED >> 1);
         break;
       case BLK_J:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.GREEN);
+        paint.setColor(Color.GREEN >> 1);
         break;
       case BLK_S:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.BLUE);
+        paint.setColor(Color.BLUE >> 1);
         break;
       case BLK_Z:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.CYAN);
+        paint.setColor(Color.CYAN >> 1);
         break;
       case BLK_L:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.MAGENTA);
+        paint.setColor(Color.MAGENTA >> 1);
         break;
       case BLK_I:
         paint.setStyle(Paint.Style.FILL);
@@ -70,7 +69,7 @@ public class Const {
         break;
       case BLK_T:
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.rgb(255, 165, 0)); // Orange
+        paint.setColor(Color.rgb(255, 165, 0) >> 1); // Orange
         break;
       default:
         paint.setStyle(Paint.Style.FILL);
