@@ -2,14 +2,18 @@ package org.androidtown.tetris;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
+  private static final int SCORE = 1;
   private final int STAGE_X_CNT = 12;
   private final int STAGE_Y_CNT = 21;
   private final int PREVIEW_X_CNT = 6;
@@ -21,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
   private int previewFrY = 0;
   private boolean isDone = false;
 
+  TextView scoreView;
+
   FrameLayout mapFr;
   FrameLayout previewFr;
   Stage stage;
@@ -28,6 +34,16 @@ public class MainActivity extends AppCompatActivity {
   Preview preview;
 
   ViewTreeObserver vto;
+  final Handler handler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      if(msg.what == SCORE) {
+        if(stage != null) {
+          scoreView.setText(stage.getScore() + "점");
+        }
+      }
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     mapFr = findViewById(R.id.map);
     previewFr = findViewById(R.id.preview);
+    scoreView = findViewById(R.id.score);
 
     vto = mapFr.getViewTreeObserver();
     vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -64,9 +81,11 @@ public class MainActivity extends AppCompatActivity {
     new Thread() {
       @Override
       public void run() {
+        Handler handler = MainActivity.this.handler;
         while(true) {
           if(stage != null) {
             stage.moveDown();
+            handler.sendEmptyMessage(SCORE);
           }
           try {
             Thread.sleep(500);

@@ -29,6 +29,7 @@ class Stage extends View implements Runnable {
   private int curY;
 
   private boolean isRun = true;
+  private int score = 0;
 
   public class BlockPos {
     int x;
@@ -63,11 +64,16 @@ class Stage extends View implements Runnable {
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
     {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+//    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
+    {SX, 54, 54, 54, 54, 54, 54, 54, 54, 54, EM, SX},
     {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
   };
 
@@ -138,17 +144,17 @@ class Stage extends View implements Runnable {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BORDER));
         } else if (map[i][j] % DN == 1) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_O));
-        } else if (map[i][j] % DN== 2) {
+        } else if (map[i][j] % DN == 2) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_I));
-        } else if (map[i][j] % DN== 3) {
+        } else if (map[i][j] % DN == 3) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_S));
-        } else if (map[i][j] % DN== 4) {
+        } else if (map[i][j] % DN == 4) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_Z));
-        } else if (map[i][j] % DN== 5) {
+        } else if (map[i][j] % DN == 5) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_L));
-        } else if (map[i][j] % DN== 6) {
+        } else if (map[i][j] % DN == 6) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_J));
-        } else if (map[i][j] % DN== 7) {
+        } else if (map[i][j] % DN == 7) {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.BLK_T));
         } else {
           canvas.drawRect(left, top, right, bottom, Const.getPaint(Const.PType.EMPTY));
@@ -193,10 +199,28 @@ class Stage extends View implements Runnable {
           int val = temp[i][j] + target[i][j];
           if (val != temp[i][j]) {
             if (isRotate) {
-              if (val > BX) {
+              if (val > BX) {  // 아래 테두리에 닿거나
+                return false;
+              } else if (val > SX) {// 이미 쌓여진 불록에 닿거나
+                dirX += (j <= 1) ? 1 : (-1);
+
+                int doneBlkCnt = 0;
+                for (int m = 0; m < temp.length; ++m) {
+                  for (int n = 0; n < temp[0].length; ++n) {
+                    if (temp[m][n] > 0) {
+                      int value = temp[m][n] + map[blockPos.y + m][blockPos.x + n + dirX];
+                      if (value < SX && value > DN) {
+                        doneBlkCnt += 1;
+                      }
+                    }
+                  }
+                }
+                if (doneBlkCnt > 0) {
+                  return false;
+                }
+              } else if (val > DN) {
                 return false;
               }
-              dirX += (j <= 1) ? 1 : (-1);
             } else {
               return false;
             }
@@ -229,6 +253,7 @@ class Stage extends View implements Runnable {
     if (isPossibleMove(0, 1, false)) {
       blockPos.y += 1;
     } else {
+      score += 10;
       blockDone();
       removeLine();
       block = preBlock;
@@ -300,6 +325,7 @@ class Stage extends View implements Runnable {
   }
 
   private void removeLine() {
+    int clearedLnCnt = 0;
     int doneCnt = 0;
     for (int i = END_Y_IDX; i >= START_Y_IDX; --i) {
       doneCnt = 0;
@@ -309,12 +335,17 @@ class Stage extends View implements Runnable {
         }
       }
       if (doneCnt >= (END_X_IDX - START_X_IDX + 1)) {
+        clearedLnCnt += 1;
         // 정리해야될 라인이 있다면
         for (int j = i - 1; j >= START_Y_IDX; --j) {
           System.arraycopy(map[j], 0, map[j + 1], 0, map[j].length);
         }
         i += 1;
       }
+    }
+
+    if (clearedLnCnt > 0) {
+      score += (clearedLnCnt * 50);
     }
   }
 
@@ -342,5 +373,9 @@ class Stage extends View implements Runnable {
     block = preBlock;
     setBlock(block);
     updatePreview();
+  }
+
+  public int getScore() {
+    return score;
   }
 }
