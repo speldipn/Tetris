@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
@@ -14,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+
 
   private final int STAGE_X_CNT = 12;
   private final int STAGE_Y_CNT = 21;
@@ -26,6 +26,11 @@ public class MainActivity extends AppCompatActivity {
   private int previewFrY = 0;
   private boolean isDone = false;
 
+  private int gameSpeed = 500;
+  private int stageLevel = 1;
+
+  private FrameLayout popUp;
+
   TextView scoreView;
 
   FrameLayout mapFr;
@@ -33,22 +38,71 @@ public class MainActivity extends AppCompatActivity {
   Stage stage;
   Thread stageThread;
   Preview preview;
+  TextView stageLvLabel;
 
   ViewTreeObserver vto;
 
-  public static final int SCORE = 1;
-  public static final int END = 2;
+  class MainThread implements Runnable {
+    private boolean isPause = false;
 
-  final Handler handler = new Handler() {
+    @Override
+    public void run() {
+      Handler handler = MainActivity.this.handler;
+      while (true) {
+        if (this.isPause) {
+          try {
+            Thread.sleep(1000);
+            continue;
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+        if (stage != null) {
+          stage.moveDown();
+          handler.sendEmptyMessage(SCORE);
+        }
+        try {
+          Thread.sleep(gameSpeed);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    public void pause(boolean enable) {
+      if (enable) {
+        this.isPause = true;
+      } else {
+        this.isPause = false;
+      }
+    }
+  }
+
+  MainThread mainThread = new MainThread();
+
+
+  public static final int SCORE = 1;
+  public static final int NEXT = 2;
+  public static final int END = 3;
+  public static final int STAGE_LEVEL = 4;
+
+  Handler handler = new Handler() {
     @Override
     public void handleMessage(Message msg) {
-      if(msg.what == SCORE) {
-        if(stage != null) {
+      if (msg.what == SCORE) {
+        if (stage != null) {
           scoreView.setText(stage.getScore() + "점");
         }
-      } else if(msg.what == END) {
+      } else if (msg.what == NEXT) {
+        mainThread.pause(true);
+        popUp.setVisibility(View.VISIBLE);
+        btnShowAll(false);
+      } else if (msg.what == END) {
         Toast.makeText(MainActivity.this, "게임이 끝났습니다", Toast.LENGTH_LONG).show();
         finish();
+      } else if(msg.what == STAGE_LEVEL) {
+        int stageLv = msg.arg1;
+        stageLvLabel.setText("Stage " + stageLv);
       }
     }
   };
@@ -58,9 +112,12 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    popUp = findViewById(R.id.popup);
     mapFr = findViewById(R.id.map);
     previewFr = findViewById(R.id.preview);
     scoreView = findViewById(R.id.score);
+    stageLvLabel = findViewById(R.id.stageLvLabel);
+    stageLvLabel.setText("Stage " + stageLevel);
 
     vto = mapFr.getViewTreeObserver();
     vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -86,23 +143,8 @@ public class MainActivity extends AppCompatActivity {
 
   public void stageRun() {
     runStage();
-    new Thread() {
-      @Override
-      public void run() {
-        Handler handler = MainActivity.this.handler;
-        while(true) {
-          if(stage != null) {
-            stage.moveDown();
-            handler.sendEmptyMessage(SCORE);
-          }
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-      }
-    }.start();
+    Thread thread = new Thread(mainThread);
+    thread.start();
   }
 
   public void runStage() {
@@ -150,6 +192,40 @@ public class MainActivity extends AppCompatActivity {
           stage.moveDown();
           break;
       }
+    }
+  }
+
+  public void next(View v) {
+    if (gameSpeed > 100) {
+      gameSpeed -= 100;
+      btnShowAll(true);
+      popUp.setVisibility(View.GONE);
+      /* --- */
+      stage.setScore(0);
+      stage.mapInit();
+      /* ---- */
+      Message msg = new Message();
+      msg.what = STAGE_LEVEL;
+      msg.arg1 = ++stageLevel;
+      handler.sendMessage(msg);
+      /* --- */
+      mainThread.pause(false);
+    } else {
+      handler.sendEmptyMessage(END);
+    }
+  }
+
+  public void btnShowAll(boolean yes) {
+    if (yes) {
+      findViewById(R.id.btnRotate).setVisibility(View.VISIBLE);
+      findViewById(R.id.btnDown).setVisibility(View.VISIBLE);
+      findViewById(R.id.btnLeft).setVisibility(View.VISIBLE);
+      findViewById(R.id.btnRight).setVisibility(View.VISIBLE);
+    } else {
+      findViewById(R.id.btnRotate).setVisibility(View.INVISIBLE);
+      findViewById(R.id.btnDown).setVisibility(View.INVISIBLE);
+      findViewById(R.id.btnLeft).setVisibility(View.INVISIBLE);
+      findViewById(R.id.btnRight).setVisibility(View.INVISIBLE);
     }
   }
 }

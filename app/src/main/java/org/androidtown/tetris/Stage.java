@@ -9,6 +9,40 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 class Stage extends View implements Runnable {
+  private final int EM = 0; // Empty
+  private final int BK = 1; // Block
+  private final int FX = 2; // Fixed
+  private final int DN = 50; // Done
+  private final int SX = 80; // Side Border
+  private final int BX = 99; // Bottom Border
+
+  private int map[][] = {
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
+    {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
+  };
+
   private final int MAP_WIDTH = 12;
   private final int MAP_HEIGHT = 24;
 
@@ -17,70 +51,34 @@ class Stage extends View implements Runnable {
   private final int START_Y_IDX = 0;
   private final int END_Y_IDX = 22;
 
-  private final int EM = 0; // Empty
-  private final int BK = 1; // Block
-  private final int FX = 2; // Fixed
-  private final int DN = 50; // Done
-  private final int SX = 80; // Side Border
-  private final int BX = 99; // Bottom Border
-
   private int blockWidth;
   private int blockHeight;
   private int curX;
   private int curY;
-
-  private boolean isRun = true;
   private int score = 0;
+  private boolean isRun = true;
+
+  /* ----- */
 
   public class BlockPos {
     int x;
     int y;
   }
+  private BlockPos blockPos = new BlockPos();
+  private Preview preview = null;
+  Handler handler = null;
+
+  /* ----- */
+
+  private enum COMMAND {Rotation, Left, Right, Down}
+  Queue<COMMAND> msgQ = new LinkedList<>();
+
+  /* ----- */
 
   private int[][] preBlock;
   private int[][] block;
 
-  private BlockPos blockPos = new BlockPos();
-
-  private enum COMMAND {Rotation, Left, Right, Down}
-
-  Queue<COMMAND> msgQ = new LinkedList<>();
-
-  int map[][] = {
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-//    {SX, EM, EM, 54, EM, 54, EM, EM, 54, EM, EM, SX},
-//    {SX, 54, 54, 54, 54, 54, 54, 54, 54, 54, EM, SX},
-    {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
-  };
-
-  private Preview preview = null;
-
-  Handler handler = null;
+  /* ----- */
 
   public Stage(Context ctx, int blockWidth, int blockHeight, Handler handler) {
     super(ctx);
@@ -256,10 +254,13 @@ class Stage extends View implements Runnable {
     if (isPossibleMove(0, 1, false)) {
       blockPos.y += 1;
     } else {
-      if(blockPos.y < 4) {
+      if (blockPos.y < 4) {
         handler.sendEmptyMessage(MainActivity.END);
       }
-      score += 10;
+      this.score += 10;
+      if (this.score >= 50) {
+        handler.sendEmptyMessage(MainActivity.NEXT);
+      }
       blockDone();
       removeLine();
       block = preBlock;
@@ -383,5 +384,20 @@ class Stage extends View implements Runnable {
 
   public int getScore() {
     return score;
+  }
+
+  public void setScore(int score) {
+    this.score = score;
+  }
+
+  public void mapInit() {
+    int row = map.length;
+    int col = map[0].length;
+    for (int i = END_Y_IDX; i >= START_Y_IDX; --i) {
+      for (int j = START_X_IDX; j <= END_X_IDX; ++j) {
+        map[i][j] = EM;
+      }
+    }
+    setBlock(block);
   }
 }
