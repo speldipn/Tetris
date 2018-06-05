@@ -3,6 +3,7 @@ package org.androidtown.tetris;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 
 import java.util.LinkedList;
@@ -17,30 +18,31 @@ class Stage extends View implements Runnable {
   private final int BX = 99; // Bottom Border
 
   private int map[][] = {
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX},
-    {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 1
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 2
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 3
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 4
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 5
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 6
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 7
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 8
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 9
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 10
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 11
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 12
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 13
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 14
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 15
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 16
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 17
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 18
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 19
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 20
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 21
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 22
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 23
+    {SX, EM, EM, EM, EM, EM, EM, EM, EM, EM, EM, SX}, // 24
+    {BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX, BX}  // 25
   };
 
   private final int MAP_WIDTH = 12;
@@ -49,7 +51,7 @@ class Stage extends View implements Runnable {
   private final int START_X_IDX = 1;
   private final int END_X_IDX = 10;
   private final int START_Y_IDX = 0;
-  private final int END_Y_IDX = 22;
+  private final int END_Y_IDX = 23;
 
   private int blockWidth;
   private int blockHeight;
@@ -64,13 +66,15 @@ class Stage extends View implements Runnable {
     int x;
     int y;
   }
+
   private BlockPos blockPos = new BlockPos();
   private Preview preview = null;
   Handler handler = null;
 
   /* ----- */
 
-  private enum COMMAND {Rotation, Left, Right, Down}
+  private enum COMMAND {Rotation, Left, Right, DownFast, Down}
+
   Queue<COMMAND> msgQ = new LinkedList<>();
 
   /* ----- */
@@ -95,6 +99,11 @@ class Stage extends View implements Runnable {
 
   private void updatePreview() {
     if (preview != null) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       preBlock = Generator.getBlock();
       preview.setBlock(preBlock);
       preview.postInvalidate();
@@ -134,7 +143,7 @@ class Stage extends View implements Runnable {
   public void drawStage(Canvas canvas) {
     int row = map.length;
     int col = map[0].length;
-    int start = 3;
+    int start = 4;
     for (int i = start; i < row; ++i) {
       for (int j = 0; j < col; ++j) {
         int left = (j * blockWidth) + Const.GRIDWIDTH;
@@ -246,30 +255,6 @@ class Stage extends View implements Runnable {
     }
   }
 
-  public void moveDown() {
-    msgQ.add(COMMAND.Down);
-  }
-
-  private void __moveDown() {
-    if (isPossibleMove(0, 1, false)) {
-      blockPos.y += 1;
-    } else {
-      if (blockPos.y < 4) {
-        handler.sendEmptyMessage(MainActivity.END);
-      }
-      this.score += 10;
-      if (this.score >= 500) {
-        handler.sendEmptyMessage(MainActivity.NEXT);
-      }
-      blockDone();
-      removeLine();
-      block = preBlock;
-      setBlock(block);
-      updatePreview();
-    }
-    postInvalidate();
-  }
-
   private void blockDone() {
     for (int i = 0; i < block.length; ++i) {
       for (int j = 0; j < block[0].length; ++j) {
@@ -302,6 +287,91 @@ class Stage extends View implements Runnable {
     }
   }
 
+  public void moveDown() {
+    msgQ.add(COMMAND.Down);
+  }
+
+  private void checkEnd() {
+    if(blockPos.y <= 4) {
+      handler.sendEmptyMessage(MainActivity.END);
+    }
+  }
+
+  private void processScore() {
+    this.score += 10;
+    if(this.score >= 500) {
+      handler.sendEmptyMessage(MainActivity.NEXT);
+    }
+  }
+
+  private void __moveDown() {
+    long startTime = System.currentTimeMillis();
+    if (isPossibleMove(0, 1, false)) {
+      blockPos.y += 1;
+    } else {
+      checkEnd();
+      processScore();
+      blockDone();
+      removeLine();
+      block = preBlock;
+      setBlock(block);
+      updatePreview();
+    }
+    postInvalidate();
+    long elapsed = System.currentTimeMillis() - startTime;
+    Log.d(Const.TAG, "down elapsed: " + elapsed + "[ms]");
+  }
+
+  public void moveDownFast() {
+    msgQ.add(COMMAND.DownFast);
+  }
+
+  public void __moveDownFast() {
+    handler.sendEmptyMessage(MainActivity.STOP);
+    int curX = blockPos.x;
+    int curY = blockPos.y;
+    int tempMap[][] = map.clone();
+    loop: for(;;) {
+      final int direction = 1;
+      for (int i = 0; i < block.length; ++i) {
+        for (int j = 0; j < block[0].length; ++j) {
+          if (block[i][j] > 0) {
+            tempMap[curY + i][curX + j] = 0;
+          }
+        }
+      }
+      // 이동하려는 방향으로 이동한 후에 맵을 가져오고
+      int[][] target = new int[block.length][block[0].length];
+      for (int i = 0; i < block.length; ++i) {
+        for (int j = 0; j < block[0].length; ++j) {
+          int _x = curX + j;
+          int _y = curY + i + direction;
+          if ((_x >= 0 && _x < MAP_WIDTH) && (_y >= 0 && _y < MAP_HEIGHT)) {
+            target[i][j] = tempMap[_y][_x];
+          } else {
+            target[i][j] = SX;
+          }
+        }
+      }
+      int[][] temp = block;
+      // 이동하려는 블럭이 이동할 수 있는지 확인
+      for (int i = 0; i < temp.length; ++i) {
+        for (int j = 0; j < temp[0].length; ++j) {
+          if (temp[i][j] > 0) {
+            int val = temp[i][j] + target[i][j];
+            if (val != temp[i][j]) {
+              break loop;
+            }
+          }
+        }
+      }
+      curY += 1;
+    }
+    blockPos.x = curX;
+    blockPos.y = curY;
+    handler.sendEmptyMessage(MainActivity.START);
+  }
+
   @Override
   public void run() {
     while (isRun) {
@@ -319,6 +389,9 @@ class Stage extends View implements Runnable {
             break;
           case Down:
             __moveDown();
+            break;
+          case DownFast:
+            __moveDownFast();
             break;
         }
       } else {

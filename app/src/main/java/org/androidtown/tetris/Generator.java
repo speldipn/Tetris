@@ -145,6 +145,7 @@ public class Generator {
     int[][][][] blocks = {
       O, I, S, Z, L, J, T
     };
+    random.setSeed(System.currentTimeMillis());
     int[][][] block = blocks[random.nextInt(blocks.length)];
     return block[random.nextInt(block.length)];
   }

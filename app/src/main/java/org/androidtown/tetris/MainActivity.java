@@ -37,18 +37,21 @@ public class MainActivity extends AppCompatActivity {
   FrameLayout previewFr;
   Stage stage;
   Thread stageThread;
+  MainThread mainTask;
+  Thread mainThread;
   Preview preview;
   TextView stageLvLabel;
 
   ViewTreeObserver vto;
 
   class MainThread implements Runnable {
+    private boolean isRun = true;
     private boolean isPause = false;
 
     @Override
     public void run() {
       Handler handler = MainActivity.this.handler;
-      while (true) {
+      while (isRun) {
         if (this.isPause) {
           try {
             Thread.sleep(1000);
@@ -69,22 +72,25 @@ public class MainActivity extends AppCompatActivity {
       }
     }
 
-    public void pause(boolean enable) {
+    public void doPause(boolean enable) {
       if (enable) {
         this.isPause = true;
       } else {
         this.isPause = false;
       }
     }
+
+    public void doStop() {
+      this.isRun = false;
+    }
   }
-
-  MainThread mainThread = new MainThread();
-
 
   public static final int SCORE = 1;
   public static final int NEXT = 2;
   public static final int END = 3;
   public static final int STAGE_LEVEL = 4;
+  public static final int START = 5;
+  public static final int STOP = 6;
 
   Handler handler = new Handler() {
     @Override
@@ -94,15 +100,19 @@ public class MainActivity extends AppCompatActivity {
           scoreView.setText(stage.getScore() + "점");
         }
       } else if (msg.what == NEXT) {
-        mainThread.pause(true);
+        mainTask.doPause(true);
         popUp.setVisibility(View.VISIBLE);
         btnShowAll(false);
       } else if (msg.what == END) {
-        Toast.makeText(MainActivity.this, "게임이 끝났습니다", Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, "게임이 끝났습니다", Toast.LENGTH_SHORT).show();
         finish();
       } else if(msg.what == STAGE_LEVEL) {
         int stageLv = msg.arg1;
         stageLvLabel.setText("Stage " + stageLv);
+      } else if(msg.what == START) {
+        mainTask.doPause(false);
+      } else if(msg.what == STOP) {
+        mainTask.doPause(true);
       }
     }
   };
@@ -143,8 +153,9 @@ public class MainActivity extends AppCompatActivity {
 
   public void stageRun() {
     runStage();
-    Thread thread = new Thread(mainThread);
-    thread.start();
+    mainTask = new MainThread();
+    mainThread = new Thread(mainTask);
+    mainThread.start();
   }
 
   public void runStage() {
@@ -166,9 +177,11 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    stage.doStop();
     try {
+      mainTask.doStop();
+      stage.doStop();
       stageThread.join();
+      mainThread.join();
     } catch (InterruptedException e) {
       e.printStackTrace();
     } finally {
@@ -191,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
         case R.id.btnDown:
           stage.moveDown();
           break;
+        case R.id.btnDownFast:
+          stage.moveDownFast();
+          break;
       }
     }
   }
@@ -206,10 +222,10 @@ public class MainActivity extends AppCompatActivity {
       /* ---- */
       Message msg = new Message();
       msg.what = STAGE_LEVEL;
-      msg.arg1 = ++stageLevel;
+      msg.arg1 = (++stageLevel);
       handler.sendMessage(msg);
       /* --- */
-      mainThread.pause(false);
+      mainTask.doPause(false);
     } else {
       handler.sendEmptyMessage(END);
     }
@@ -221,11 +237,13 @@ public class MainActivity extends AppCompatActivity {
       findViewById(R.id.btnDown).setVisibility(View.VISIBLE);
       findViewById(R.id.btnLeft).setVisibility(View.VISIBLE);
       findViewById(R.id.btnRight).setVisibility(View.VISIBLE);
+      findViewById(R.id.btnDownFast).setVisibility(View.VISIBLE);
     } else {
       findViewById(R.id.btnRotate).setVisibility(View.INVISIBLE);
       findViewById(R.id.btnDown).setVisibility(View.INVISIBLE);
       findViewById(R.id.btnLeft).setVisibility(View.INVISIBLE);
       findViewById(R.id.btnRight).setVisibility(View.INVISIBLE);
+      findViewById(R.id.btnDownFast).setVisibility(View.INVISIBLE);
     }
   }
 }
