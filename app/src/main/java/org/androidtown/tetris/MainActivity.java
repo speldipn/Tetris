@@ -6,9 +6,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
   private int mapFrY = 0;
   private int previewFrX = 0;
   private int previewFrY = 0;
-  private boolean isDone = false;
 
   private int gameSpeed = 500;
   private int stageLevel = 1;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
   TextView stageLvLabel;
 
   ViewTreeObserver vto;
+
+  ImageButton btnRotate, btnLeft, btnRight, btnDown;
 
   class MainThread implements Runnable {
     private boolean isRun = true;
@@ -126,6 +129,18 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    btnLeft = findViewById(R.id.btnLeft);
+    btnRight = findViewById(R.id.btnRight);
+    btnRotate = findViewById(R.id.btnRotate);
+    btnDown = findViewById(R.id.btnDown);
+    btnDown.setOnTouchListener(new View.OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        stage.moveDown();
+        return false;
+      }
+    });
+
     popUp = findViewById(R.id.popup);
     mapFr = findViewById(R.id.map);
     previewFr = findViewById(R.id.preview);
@@ -205,12 +220,6 @@ public class MainActivity extends AppCompatActivity {
         case R.id.btnRight:
           stage.moveRight();
           break;
-        case R.id.btnDown:
-          stage.moveDown();
-          break;
-        case R.id.btnDownFast:
-          stage.moveDownFast();
-          break;
       }
     }
   }
@@ -237,17 +246,15 @@ public class MainActivity extends AppCompatActivity {
 
   public void btnShowAll(boolean yes) {
     if (yes) {
-      findViewById(R.id.btnRotate).setVisibility(View.VISIBLE);
-      findViewById(R.id.btnDown).setVisibility(View.VISIBLE);
-      findViewById(R.id.btnLeft).setVisibility(View.VISIBLE);
-      findViewById(R.id.btnRight).setVisibility(View.VISIBLE);
-      findViewById(R.id.btnDownFast).setVisibility(View.VISIBLE);
+      btnDown.setVisibility(View.VISIBLE);
+      btnLeft.setVisibility(View.VISIBLE);
+      btnRight.setVisibility(View.VISIBLE);
+      btnRotate.setVisibility(View.VISIBLE);
     } else {
-      findViewById(R.id.btnRotate).setVisibility(View.INVISIBLE);
-      findViewById(R.id.btnDown).setVisibility(View.INVISIBLE);
-      findViewById(R.id.btnLeft).setVisibility(View.INVISIBLE);
-      findViewById(R.id.btnRight).setVisibility(View.INVISIBLE);
-      findViewById(R.id.btnDownFast).setVisibility(View.INVISIBLE);
+      btnDown.setVisibility(View.INVISIBLE);
+      btnLeft.setVisibility(View.INVISIBLE);
+      btnRight.setVisibility(View.INVISIBLE);
+      btnRotate.setVisibility(View.INVISIBLE);
     }
   }
 }

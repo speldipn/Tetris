@@ -379,7 +379,7 @@ class Stage extends View implements Runnable {
           case Down:
             __moveDown();
             break;
-          case DownFast:
+          case DownFast: /* 20180606: not used */
             __moveDownFast();
             break;
         }
