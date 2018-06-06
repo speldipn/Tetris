@@ -97,14 +97,18 @@ public class MainActivity extends AppCompatActivity {
     public void handleMessage(Message msg) {
       if (msg.what == SCORE) {
         if (stage != null) {
-          scoreView.setText(stage.getScore() + "점");
+          int score  = stage.getScore();
+          scoreView.setText(score + "점");
+          if(score >= 500) {
+            handler.sendEmptyMessage(NEXT);
+          }
         }
       } else if (msg.what == NEXT) {
         mainTask.doPause(true);
         popUp.setVisibility(View.VISIBLE);
         btnShowAll(false);
       } else if (msg.what == END) {
-        Toast.makeText(MainActivity.this, "게임이 끝났습니다", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "게임을 종료합니다", Toast.LENGTH_SHORT).show();
         finish();
       } else if(msg.what == STAGE_LEVEL) {
         int stageLv = msg.arg1;

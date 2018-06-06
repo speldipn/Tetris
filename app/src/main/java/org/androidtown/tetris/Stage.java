@@ -3,7 +3,6 @@ package org.androidtown.tetris;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 
 import java.util.LinkedList;
@@ -297,20 +296,12 @@ class Stage extends View implements Runnable {
     }
   }
 
-  private void processScore() {
-    this.score += 10;
-    if(this.score >= 500) {
-      handler.sendEmptyMessage(MainActivity.NEXT);
-    }
-  }
-
   private void __moveDown() {
-    long startTime = System.currentTimeMillis();
     if (isPossibleMove(0, 1, false)) {
       blockPos.y += 1;
     } else {
+      score += 10;
       checkEnd();
-      processScore();
       blockDone();
       removeLine();
       block = preBlock;
@@ -318,8 +309,6 @@ class Stage extends View implements Runnable {
       updatePreview();
     }
     postInvalidate();
-    long elapsed = System.currentTimeMillis() - startTime;
-    Log.d(Const.TAG, "down elapsed: " + elapsed + "[ms]");
   }
 
   public void moveDownFast() {
